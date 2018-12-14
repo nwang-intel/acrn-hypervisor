@@ -15,6 +15,7 @@
 static int unhandled_vmexit_handler(struct acrn_vcpu *vcpu);
 static int xsetbv_vmexit_handler(struct acrn_vcpu *vcpu);
 static int wbinvd_vmexit_handler(struct acrn_vcpu *vcpu);
+static int preemption_timeout_handler(struct acrn_vcpu *vcpu);
 
 /* VM Dispatch table for Exit condition handling */
 static const struct vm_exit_dispatch dispatch_table[NR_VMX_EXIT_REASONS] = {
@@ -124,7 +125,7 @@ static const struct vm_exit_dispatch dispatch_table[NR_VMX_EXIT_REASONS] = {
 	[VMX_EXIT_REASON_RDTSCP] = {
 		.handler = unhandled_vmexit_handler},
 	[VMX_EXIT_REASON_VMX_PREEMPTION_TIMER_EXPIRED] = {
-		.handler = unhandled_vmexit_handler},
+		.handler = preemption_timeout_handler},
 	[VMX_EXIT_REASON_INVVPID] = {
 		.handler = unhandled_vmexit_handler},
 	[VMX_EXIT_REASON_WBINVD] = {
@@ -367,6 +368,38 @@ static int wbinvd_vmexit_handler(struct acrn_vcpu *vcpu)
 	if (!iommu_snoop_supported(vcpu->vm)) {
 		cache_flush_invalidate_all();
 	}
+
+	return 0;
+}
+
+#define HV_ARCH_X64_PREEMTION_TIMER_EXPIRY 40 /*timeout is 40ms*/
+static int preemption_timeout_handler(struct acrn_vcpu *vcpu)
+{
+	uint64_t field;
+	uint32_t value32;
+	uint32_t preemtion_timer_freq;
+
+	/* Get Preemption Timer Register */
+	field = VMX_GUEST_TIMER;
+
+	/* Calculate Preemption Timer Frequency */
+	preemtion_timer_freq = ((tsc_khz * 1000U) >> (msr_read(MSR_IA32_VMX_MISC) & 0x1FUL));
+	/* Calculate Number of ticks corresponding to expiry time */
+	value32 = ((uint64_t) preemtion_timer_freq *
+		   (uint64_t) HV_ARCH_X64_PREEMTION_TIMER_EXPIRY) / 1000;
+
+	/* Write value into Preemption Timer Register */
+	exec_vmwrite32(field, (uint64_t) value32);
+
+	/*pr_fatal("Resetting VMX_GUEST_TIMER to Value: 0x%x ", value32);*/
+	/* Kick HV-Shell and VirtIO-Console tasks */
+	if (get_cpu_id() == BOOT_CPU_ID) {
+		console_kick_handler();
+	}
+
+	/* Re-execute last instruction */
+
+	vcpu_retain_rip(vcpu);
 
 	return 0;
 }

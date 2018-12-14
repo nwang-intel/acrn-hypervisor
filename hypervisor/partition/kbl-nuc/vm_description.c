@@ -157,6 +157,9 @@ struct vm_description_array vm_desc_partition = {
 						consoleblank=0 tsc=reliable xapic_phys apic_debug",
 				.vpci_vdev_array = &vpci_vdev_array1,
 				.mptable = &mptable_vm1,
+#ifdef CONFIG_LAPIC_PT
+				.lapic_pt = true,
+#endif
 			},
 
 			{
@@ -172,6 +175,9 @@ struct vm_description_array vm_desc_partition = {
 						consoleblank=0 tsc=reliable xapic_phys apic_debug",
 				.vpci_vdev_array = &vpci_vdev_array2,
 				.mptable = &mptable_vm2,
+#ifdef CONFIG_LAPIC_PT
+				.lapic_pt = true,
+#endif
 			},
 		}
 };

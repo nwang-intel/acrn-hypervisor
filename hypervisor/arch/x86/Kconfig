@@ -379,3 +379,9 @@ config ENFORCE_VALIDATED_ACPI_INFO
 config L1D_FLUSH_VMENTRY_ENABLED
 	bool "Enable L1 cache flush before VM entry"
 	default n
+
+config LAPIC_PT
+        bool "The platform suport LAPIC pass through in the partition mode"
+        default y
+        help
+	  The platform suport LAPIC pass through in the partition mode

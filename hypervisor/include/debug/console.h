@@ -45,4 +45,6 @@ void shell_kick(void);
 void suspend_console(void);
 void resume_console(void);
 
+void console_kick_handler(void);
+
 #endif /* CONSOLE_H */

@@ -512,7 +512,9 @@ static void bsp_boot_post(void)
 
 	ASSERT(get_cpu_id() == BOOT_CPU_ID, "");
 
+#ifndef CONFIG_LAPIC_PT
 	console_setup_timer();
+#endif
 
 	exec_vmxon_instr(BOOT_CPU_ID);
 

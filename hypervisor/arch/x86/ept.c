@@ -111,7 +111,9 @@ int ept_violation_vmexit_handler(struct acrn_vcpu *vcpu)
 	/* Adjust IPA appropriately and OR page offset to get full IPA of abort
 	 */
 	mmio_req->address = gpa;
-
+#ifdef CONFIG_LAPIC_PT
+	pr_fatal("ept_violation_vmexit_handler:mmio_req->address=0x%llx", mmio_req->address);
+#endif
 	ret = decode_instruction(vcpu);
 	if (ret > 0) {
 		mmio_req->size = (uint64_t)ret;

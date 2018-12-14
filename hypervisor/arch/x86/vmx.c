@@ -778,8 +778,13 @@ static void init_exec_ctrl(struct acrn_vcpu *vcpu)
 	 * interrupts preemption timer - pg 2899 24.6.1
 	 */
 	/* enable external interrupt VM Exit */
+#ifdef CONFIG_LAPIC_PT
+	value32 = check_vmx_ctrl(MSR_IA32_VMX_PINBASED_CTLS,
+			VMX_PINBASED_CTLS_IRQ_EXIT | VMX_PINBASED_CTLS_ENABLE_PTMR);
+#else
 	value32 = check_vmx_ctrl(MSR_IA32_VMX_PINBASED_CTLS,
 			VMX_PINBASED_CTLS_IRQ_EXIT);
+#endif
 
 	if (is_apicv_posted_intr_supported()) {
 		value32 |= VMX_PINBASED_CTLS_POST_IRQ;
@@ -1013,13 +1018,24 @@ static void init_exit_ctrl(struct acrn_vcpu *vcpu)
 	 * Enable saving and loading of IA32_PAT and IA32_EFER on VMEXIT Enable
 	 * saving of pre-emption timer on VMEXIT
 	 */
+#ifdef CONFIG_LAPIC_PT
 	value32 = check_vmx_ctrl(MSR_IA32_VMX_EXIT_CTLS,
 			VMX_EXIT_CTLS_ACK_IRQ |
 			VMX_EXIT_CTLS_SAVE_PAT |
 			VMX_EXIT_CTLS_LOAD_PAT |
 			VMX_EXIT_CTLS_LOAD_EFER |
 			VMX_EXIT_CTLS_SAVE_EFER |
-			VMX_EXIT_CTLS_HOST_ADDR64);
+			VMX_EXIT_CTLS_HOST_ADDR64 |
+			VMX_EXIT_CTLS_SAVE_PTMR);
+#else
+        value32 = check_vmx_ctrl(MSR_IA32_VMX_EXIT_CTLS,
+                        VMX_EXIT_CTLS_ACK_IRQ |
+                        VMX_EXIT_CTLS_SAVE_PAT |
+                        VMX_EXIT_CTLS_LOAD_PAT |
+                        VMX_EXIT_CTLS_LOAD_EFER |
+                        VMX_EXIT_CTLS_SAVE_EFER |
+                        VMX_EXIT_CTLS_HOST_ADDR64);
+#endif
 
 	exec_vmwrite32(VMX_EXIT_CONTROLS, value32);
 	pr_dbg("VMX_EXIT_CONTROL: 0x%x ", value32);

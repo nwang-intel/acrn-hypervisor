@@ -366,6 +366,9 @@ int32_t external_interrupt_vmexit_handler(struct acrn_vcpu *vcpu)
 		ctx.cs     = exec_vmread32(VMX_GUEST_CS_SEL);
 
 #ifdef CONFIG_PARTITION_MODE
+#ifdef CONFIG_LAPIC_PT
+		pr_fatal("external_interrupt_vmexit_handler: ctx.vector=%u,ctx.rip=0x%llx", ctx.vector, ctx.rip);
+#endif
 		partition_mode_dispatch_interrupt(&ctx);
 #else
 		dispatch_interrupt(&ctx);

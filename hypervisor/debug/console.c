@@ -48,6 +48,13 @@ static void console_timer_callback(__unused void *data)
 	}
 }
 
+void console_kick_handler(void)
+{
+	void *pdata = NULL;
+	console_timer_callback(pdata);
+
+}
+
 void console_setup_timer(void)
 {
 	uint64_t period_in_cycle, fire_tsc;
