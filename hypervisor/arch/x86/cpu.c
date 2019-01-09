@@ -518,6 +518,8 @@ static void bsp_boot_post(void)
 
 	exec_vmxon_instr(BOOT_CPU_ID);
 
+	unit_test_init();
+
 	(void)prepare_vm(BOOT_CPU_ID);
 
 	default_idle();
