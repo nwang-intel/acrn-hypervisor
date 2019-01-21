@@ -8,6 +8,29 @@
 #include <multiboot.h>
 #include <boot_context.h>
 
+static struct vm_io_range testdev_range = {
+	.flags = IO_ATTR_RW,
+	.base = 0xf4U,
+	.len = 4U,
+};
+
+static uint32_t
+testdev_io_read(__unused struct acrn_vm *vm, __unused uint16_t addr, __unused size_t bytes)
+{
+	return 0U;
+}
+
+static void
+testdev_io_write(struct acrn_vm *vm, __unused uint16_t addr, __unused size_t bytes, __unused uint32_t val)
+{
+	uint16_t i;
+	struct acrn_vcpu *vcpu = NULL;
+
+	foreach_vcpu(i, vm, vcpu) {
+		pause_vcpu(vcpu, VCPU_PAUSED);
+	}
+}
+
 static void prepare_bsp_gdt(struct acrn_vm *vm)
 {
 	size_t gdt_len;
@@ -99,6 +122,9 @@ int32_t unit_test_sw_loader(struct acrn_vm *vm)
 	}
 	vcpu_set_gpreg(vcpu, CPU_REG_RAX, MULTIBOOT_INFO_MAGIC);
 	vcpu_set_gpreg(vcpu, CPU_REG_RBX, create_multiboot_info(vm));
+
+	register_io_emulation_handler(vm, TESTDEV_PIO_IDX, &testdev_range,
+				      testdev_io_read, testdev_io_write);
 
 	return ret;
 }

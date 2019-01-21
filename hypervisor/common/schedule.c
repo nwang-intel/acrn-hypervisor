@@ -172,6 +172,10 @@ void default_idle(void)
 	uint16_t pcpu_id = get_cpu_id();
 
 	while (1) {
+		if (get_cpu_id() == BOOT_CPU_ID) {
+			console_kick_handler();
+		}
+
 		if (need_reschedule(pcpu_id) != 0) {
 			schedule();
 		} else if (need_offline(pcpu_id) != 0) {

@@ -21,7 +21,8 @@
 #define PM1B_EVT_PIO_IDX	(PM1A_CNT_PIO_IDX + 1U)
 #define PM1B_CNT_PIO_IDX	(PM1B_EVT_PIO_IDX + 1U)
 #define RTC_PIO_IDX		(PM1B_CNT_PIO_IDX + 1U)
-#define EMUL_PIO_IDX_MAX	(RTC_PIO_IDX + 1U)
+#define TESTDEV_PIO_IDX		(RTC_PIO_IDX + 1U)
+#define EMUL_PIO_IDX_MAX	(TESTDEV_PIO_IDX + 1U)
 
 /* Write 1 byte to specified I/O port */
 static inline void pio_write8(uint8_t value, uint16_t port)
