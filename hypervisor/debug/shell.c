@@ -32,6 +32,8 @@ static int shell_show_ioapic_info(__unused int argc, __unused char **argv);
 static int shell_loglevel(int argc, char **argv);
 static int shell_cpuid(int argc, char **argv);
 static int shell_trigger_crash(int argc, char **argv);
+static int shell_start_test(int argc, char **argv);
+static int shell_stop_test(__unused int argc, __unused char **argv);
 
 static struct shell_cmd shell_cmds[] = {
 	{
@@ -111,6 +113,18 @@ static struct shell_cmd shell_cmds[] = {
 		.cmd_param	= SHELL_CMD_REBOOT_PARAM,
 		.help_str	= SHELL_CMD_REBOOT_HELP,
 		.fcn		= shell_trigger_crash,
+	},
+	{
+		.str		= SHELL_CMD_START_TEST,
+		.cmd_param	= SHELL_CMD_START_TEST_PARAM,
+		.help_str	= SHELL_CMD_START_TEST_HELP,
+		.fcn		= shell_start_test,
+	},
+	{
+		.str		= SHELL_CMD_STOP_TEST,
+		.cmd_param	= SHELL_CMD_STOP_TEST_PARAM,
+		.help_str	= SHELL_CMD_STOP_TEST_HELP,
+		.fcn		= shell_stop_test,
 	},
 };
 
@@ -1240,6 +1254,50 @@ static int shell_trigger_crash(int argc, char **argv)
 	asm("movl $0x1, %eax");
 	asm("movl $0x0, %ecx");
 	asm("idiv  %ecx");
+
+	return 0;
+}
+
+static char cmdline_buffer[MEM_2K];
+
+static int shell_start_test(int argc, char **argv)
+{
+	if (get_vm_from_vmid(1U) == NULL) {
+		struct vm_description *vm_desc = pcpu_vm_desc_map[0].vm_desc_ptr;
+		char *buf = cmdline_buffer;
+		size_t sz = MEM_2K;
+		int i;
+
+		buf[0] = '\0';
+		for (i = 1; i < argc; i++) {
+			size_t len = strnlen_s(argv[i], sz);
+			char ending = (i < argc - 1) ?  ' ' : '\0';
+
+			memcpy_s(buf, sz, argv[i], len);
+			buf[len] = ending;
+
+			sz -= len + 1;
+			buf += len + 1;
+		}
+
+		vm_desc->bootargs = cmdline_buffer;
+		(void)prepare_vm(BOOT_CPU_ID);
+	} else {
+		shell_puts("Unit test VM already exists.\r\n");
+	}
+
+	return 0;
+}
+
+static int shell_stop_test(__unused int argc, __unused char **argv)
+{
+	struct acrn_vm *vm = get_vm_from_vmid(1U);
+
+	if (vm) {
+		shutdown_vm(vm);
+	} else {
+		shell_puts("Unit test VM does not exist.\r\n");
+	}
 
 	return 0;
 }
