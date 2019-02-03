@@ -665,7 +665,9 @@ uint64_t e820_alloc_low_memory(uint32_t size_arg)
 	/* We want memory in page boundary and integral multiple of pages */
 	size = (((size + PAGE_SIZE) - 1U) >> PAGE_SHIFT) << PAGE_SHIFT;
 
-	for (i = 0U; i < e820_entries; i++) {
+	for (i = e820_entries; i > 0; ) {
+		i--;
+
 		entry = &e820[i];
 		uint64_t start, end, length;
 
