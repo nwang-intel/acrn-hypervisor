@@ -400,10 +400,12 @@ void vuart_init(struct acrn_vm *vm)
 	vm->vuart.dll = (uint8_t)divisor;
 	vm->vuart.dlh = (uint8_t)(divisor >> 8U);
 
-	vm->vuart.active = false;
+	vm->vuart.active = true;
 	vm->vuart.base = CONFIG_COM_BASE;
 	vm->vuart.vm = vm;
 	vuart_fifo_init(vu);
 	vuart_lock_init(vu);
 	vuart_register_io_handler(vm);
+
+	vuart_vmid = vm->vm_id;
 }
