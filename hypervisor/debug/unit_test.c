@@ -89,7 +89,10 @@ int32_t unit_test_sw_loader(struct acrn_vm *vm)
 	int32_t ret = 0;
 	uint32_t i;
 	void *hva;
-	uint32_t kernel_entry_offset = 12U;  /* Size of the multiboot header */
+	//uint32_t kernel_entry_offset = 12U;  /* Size of the multiboot header */
+	//change to 0x3c according to the realmode.elf  /* Size of the multiboot header */
+	uint32_t kernel_entry_offset = 0x3c;  /* Size of the multiboot header */
+
 	struct sw_kernel_info *sw_kernel = &(vm->sw.kernel_info);
 	struct acrn_vcpu *vcpu = get_primary_vcpu(vm);
 	struct acrn_vcpu_regs unit_test_context;
@@ -100,7 +103,9 @@ int32_t unit_test_sw_loader(struct acrn_vm *vm)
 	memset(&unit_test_context, 0, sizeof(unit_test_context));
 
 	/* Hack: unit tests are always loaded at 4M, not 16M. */
-	sw_kernel->kernel_load_addr = (void *)(4 * 1024 * 1024UL);
+	//sw_kernel->kernel_load_addr = (void *)(4 * 1024 * 1024UL);
+	//load to 16K(0x4000) for realmode.elf
+	sw_kernel->kernel_load_addr = (void *)(16 * 1024UL);
 
 	sw_kernel->kernel_entry_addr =
 		(void *)((uint64_t)sw_kernel->kernel_load_addr
